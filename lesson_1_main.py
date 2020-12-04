@@ -2,7 +2,7 @@ import requests
 import time
 import telegram
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 
 def get_user_reviews(url: str, headers: dict, params: dict = None):
