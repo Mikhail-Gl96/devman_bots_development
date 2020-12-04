@@ -69,7 +69,7 @@ def send_msg_to_user(chat_id: int, text: str, use_name: bool = False):
 
 
 if __name__ == '__main__':
-    load_dotenv()
+#     load_dotenv()
 
     AUTHORIZATION_TOKEN_DEVMAN = os.getenv("AUTHORIZATION_TOKEN_DEVMAN")
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
