@@ -1,1 +1,1 @@
-bot: python3 lesson_1_main.py
+bot: python3 main.py
