@@ -10,7 +10,7 @@ Notification bot for Devman.org
 1. Скачайте проект с гитхаба
 2. Перейдите в папку с ботом с помощью консоли и команды `cd <путь до проекта devman_bots_development>`<br>
 3. Установить зависимости из файла `requirements.txt`<br>
-   Библиотеки к установке: `requests`, `python-telegram-bot`. Если вы не используете облачные сервисы для деплоя, то добавьте в файл `requirements.txt` строку `dotenv`<br>
+   Библиотеки к установке: `requests`, `python-telegram-bot`. Если вы не используете облачные сервисы для деплоя, то добавьте в файл `requirements.txt` строку `python-dotenv`<br>
    
    Возможные команды для установки:<br>
    `pip3 install -r requirements.txt`<br>
