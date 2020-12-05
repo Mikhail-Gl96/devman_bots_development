@@ -2,9 +2,15 @@ import requests
 import time
 import telegram
 import os
-from dotenv import load_dotenv
-
 import logging
+
+OS_NAME = os.name
+# Если не деплоим в облако, то нужна библиотека load_dotenv
+if OS_NAME in ["nt", 'win32', 'cygwin', 'mac']:
+    from dotenv import load_dotenv
+else:
+    OS_NAME = None
+
 from MyLogger import MyLoggerFormatter, create_my_logger, create_log_message
 
 # Сделал свой логгер, тк в будущем проект может состоять из нескольких модулей.
@@ -99,7 +105,8 @@ def send_msg_to_user(text: str, chat_id: int = None, use_name: bool = False, bot
 if __name__ == '__main__':
     main_logger = create_my_logger(name=__name__, level=logging.INFO)
 
-    load_dotenv()
+    if OS_NAME:
+        load_dotenv()
 
     AUTHORIZATION_TOKEN_DEVMAN = os.getenv("AUTHORIZATION_TOKEN_DEVMAN")
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
