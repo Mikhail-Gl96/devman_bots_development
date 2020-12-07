@@ -28,27 +28,28 @@ def create_my_logger(name, level):
                                   datefmt='%Y-%m-%d %H:%M:%S.%f')
     console.setFormatter(formatter)
 
-    module_MyLogger_logger.debug(f" .create_my_logger - Create logger for {name}")
+    custom_logger.debug(f" {__name__}.create_my_logger - Create logger for {name}")
     return custom_logger
 
 
 def create_log_message(logger_msg, msg: str, to_telegram=False, func=None):
     """Логгируем действие и если необходимо, отправляем уведомление в телеграм вместе с полученным сообщением"""
     if func:
-        msg = f' .{func} - {msg} '
+        msg = f' {func} - {msg} '
     try:
         # Импорт глобальных переменных из главного модуля, чтобы сработа функция send_msg_to_user
         # Импорт в начале файла сделать не получится, тк переменные еще не существуют в главном модуле
         from __main__ import send_msg_to_user, BOT, TELEGRAM_CHAT_ID
-        module_MyLogger_logger.debug(f" .create_log_message - Import send_msg_to_user, BOT, TELEGRAM_CHAT_ID is True")
+        module_MyLogger_logger.debug(f" {__name__}.create_log_message - Import send_msg_to_user, BOT, TELEGRAM_CHAT_ID is True")
     except Exception as e:
         module_MyLogger_logger.warning(e)
     logger_msg(msg)
     if to_telegram:
         send_msg_to_user(text=msg)
-        module_MyLogger_logger.debug(f" .create_log_message - Send notification to telegram")
+        module_MyLogger_logger.debug(f" {__name__}.create_log_message - Send notification to telegram")
 
 
 module_MyLogger_logger = create_my_logger(name=__name__, level=logging.INFO)
+
 
 

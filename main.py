@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 #     from dotenv import load_dotenv
 # else:
 #     OS_NAME = None
+import MyLogger
 
 from MyLogger import create_my_logger, create_log_message
 
@@ -26,12 +27,12 @@ def get_user_reviews(url: str, headers: dict, params: dict = None):
     except requests.exceptions.ReadTimeout as e:
         error_msg = f'Произошла ошибка:\n{e}'
         create_log_message(logger_msg=main_logger.exception, msg=error_msg,
-                           to_telegram=True, func="get_user_reviews")
+                           to_telegram=True, func=f"{__name__}.get_user_reviews")
         return
     except requests.exceptions.ConnectionError as e:
         error_msg = f'Произошла ошибка:\n{e}'
         create_log_message(logger_msg=main_logger.exception, msg=error_msg,
-                           func="get_user_reviews")
+                           func=f"{__name__}.get_user_reviews")
         time.sleep(10)
         return
 
@@ -64,7 +65,7 @@ def get_request_long_polling(base_url: str, auth_token: str, params: dict = None
 
         create_log_message(logger_msg=main_logger.debug,
                            msg=f"Homework review was sent to chat_id={TELEGRAM_CHAT_ID}",
-                           func="get_request_long_polling")
+                           func=f"{__name__}.get_request_long_polling")
 
         return user_reviews.get("last_attempt_timestamp")
 
@@ -92,13 +93,13 @@ def send_msg_to_user(text: str, chat_id: int = None, use_name: bool = False, bot
 
         create_log_message(logger_msg=main_logger.debug,
                            msg=f"Send to chat_id: {chat_id} message: {message}",
-                           func="send_msg_to_user")
+                           func=f"{__name__}.send_msg_to_user")
 
     except telegram.error.BadRequest as e:
         create_log_message(logger_msg=main_logger.exception,
                            msg=f'Chat [chat_id={chat_id}] not found. If you have not send command /start to bot, '
                                f'just do it.\n Error: {e}',
-                           func="send_msg_to_user")
+                           func=f"{__name__}.send_msg_to_user")
 
 
 if __name__ == '__main__':
