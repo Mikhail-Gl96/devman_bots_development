@@ -4,23 +4,19 @@ import telegram
 import os
 import logging
 
-OS_NAME = os.name
+from dotenv import load_dotenv
+
+# OS_NAME = os.name
 # Если не деплоим в облако, то нужна библиотека load_dotenv
-if OS_NAME in ["nt", 'win32', 'cygwin', 'mac']:
-    from dotenv import load_dotenv
-else:
-    OS_NAME = None
+# if OS_NAME in ["nt", 'win32', 'cygwin', 'mac', '']:
+#     from dotenv import load_dotenv
+# else:
+#     OS_NAME = None
 
-from MyLogger import MyLoggerFormatter, create_my_logger, create_log_message
-
-# Сделал свой логгер, тк в будущем проект может состоять из нескольких модулей.
-# Чтобы было проще логгировать работу каждого модуля необходимо создать логгер на каждый модуль.
-
-# logger.warning("This is a Warning")
+from MyLogger import create_my_logger, create_log_message
 
 
 def get_user_reviews(url: str, headers: dict, params: dict = None):
-    logger = logging.getLogger(f'{__name__}.get_user_reviews')
     server_response_max_time = 90
     timeout = server_response_max_time + 5
     try:
@@ -29,17 +25,18 @@ def get_user_reviews(url: str, headers: dict, params: dict = None):
         return response.json()
     except requests.exceptions.ReadTimeout as e:
         error_msg = f'Произошла ошибка:\n{e}'
-        create_log_message(logger_msg=logger.exception, msg=error_msg, to_telegram=True)
+        create_log_message(logger_msg=main_logger.exception, msg=error_msg,
+                           to_telegram=True, func="get_user_reviews")
         return
     except requests.exceptions.ConnectionError as e:
         error_msg = f'Произошла ошибка:\n{e}'
-        create_log_message(logger_msg=logger.exception, msg=error_msg)
+        create_log_message(logger_msg=main_logger.exception, msg=error_msg,
+                           func="get_user_reviews")
         time.sleep(10)
         return
 
 
 def get_request_long_polling(base_url: str, auth_token: str, params: dict = None):
-    logger = logging.getLogger(f'{__name__}.get_request_long_polling')
     url = f'{base_url}/api/long_polling/'
     headers = {
         "Authorization": auth_token
@@ -65,8 +62,9 @@ def get_request_long_polling(base_url: str, auth_token: str, params: dict = None
 
         send_msg_to_user(chat_id=TELEGRAM_CHAT_ID, text=answer, use_name=True)
 
-        create_log_message(logger_msg=logger.debug,
-                           msg=f"Homework review was sent to chat_id={TELEGRAM_CHAT_ID}")
+        create_log_message(logger_msg=main_logger.debug,
+                           msg=f"Homework review was sent to chat_id={TELEGRAM_CHAT_ID}",
+                           func="get_request_long_polling")
 
         return user_reviews.get("last_attempt_timestamp")
 
@@ -78,7 +76,6 @@ def send_msg_to_user(text: str, chat_id: int = None, use_name: bool = False, bot
         bot = BOT
     if not chat_id:
         chat_id = TELEGRAM_CHAT_ID
-    logger = logging.getLogger(f'{__name__}.send_msg_to_user')
     try:
         chat_info = bot.get_chat(chat_id=chat_id)
         if chat_info["type"] == 'private':
@@ -93,20 +90,23 @@ def send_msg_to_user(text: str, chat_id: int = None, use_name: bool = False, bot
         message = f'{text} {chat_name if use_name else ""}'
         bot.send_message(chat_id=chat_id, text=message)
 
-        create_log_message(logger_msg=logger.debug,
-                           msg=f"Send to chat_id: {chat_id} message: {message}")
+        create_log_message(logger_msg=main_logger.debug,
+                           msg=f"Send to chat_id: {chat_id} message: {message}",
+                           func="send_msg_to_user")
 
     except telegram.error.BadRequest as e:
-        create_log_message(logger_msg=logger.exception,
+        create_log_message(logger_msg=main_logger.exception,
                            msg=f'Chat [chat_id={chat_id}] not found. If you have not send command /start to bot, '
-                               f'just do it.\n Error: {e}')
+                               f'just do it.\n Error: {e}',
+                           func="send_msg_to_user")
 
 
 if __name__ == '__main__':
     main_logger = create_my_logger(name=__name__, level=logging.INFO)
 
-    if OS_NAME:
-        load_dotenv()
+    load_dotenv()
+    # if OS_NAME:
+    #     load_dotenv()
 
     AUTHORIZATION_TOKEN_DEVMAN = os.getenv("AUTHORIZATION_TOKEN_DEVMAN")
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
