@@ -6,16 +6,6 @@ import logging
 
 from dotenv import load_dotenv
 
-# OS_NAME = os.name
-# Если не деплоим в облако, то нужна библиотека load_dotenv
-# if OS_NAME in ["nt", 'win32', 'cygwin', 'mac', '']:
-#     from dotenv import load_dotenv
-# else:
-#     OS_NAME = None
-import MyLogger
-
-from MyLogger import create_my_logger, create_log_message
-
 
 def get_user_reviews(url: str, headers: dict, params: dict = None):
     server_response_max_time = 90
@@ -26,11 +16,13 @@ def get_user_reviews(url: str, headers: dict, params: dict = None):
         return response.json()
     except requests.exceptions.ReadTimeout as e:
         error_msg = f'Произошла ошибка:\n{e}'
+
         create_log_message(logger_msg=main_logger.exception, msg=error_msg,
                            to_telegram=True, func=f"{__name__}.get_user_reviews")
         return
     except requests.exceptions.ConnectionError as e:
         error_msg = f'Произошла ошибка:\n{e}'
+
         create_log_message(logger_msg=main_logger.exception, msg=error_msg,
                            func=f"{__name__}.get_user_reviews")
         time.sleep(10)
@@ -102,12 +94,15 @@ def send_msg_to_user(text: str, chat_id: int = None, use_name: bool = False, bot
                            func=f"{__name__}.send_msg_to_user")
 
 
+# Импорт должен быть тут, а не в начале, тк в модуле логгирования мы импортитруем функцию
+# отправки сообщения в телеграмм send_msg_to_user из __main__ модуля
+from MyLogger import TelegramLogsHandler, create_my_logger, create_log_message
+
+
 if __name__ == '__main__':
     main_logger = create_my_logger(name=__name__, level=logging.INFO)
 
     load_dotenv()
-    # if OS_NAME:
-    #     load_dotenv()
 
     AUTHORIZATION_TOKEN_DEVMAN = os.getenv("AUTHORIZATION_TOKEN_DEVMAN")
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -116,7 +111,11 @@ if __name__ == '__main__':
     URL_DEVMAN = "https://dvmn.org"
 
     BOT = telegram.Bot(token=TELEGRAM_TOKEN)
+
+    main_logger.addHandler(TelegramLogsHandler(tg_bot=BOT, chat_id=TELEGRAM_CHAT_ID))
+
     start_message = "Бот запущен"
+
     create_log_message(logger_msg=main_logger.info, msg=start_message, to_telegram=True)
 
     params = {
