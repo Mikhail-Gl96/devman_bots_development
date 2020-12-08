@@ -6,6 +6,8 @@ import logging
 
 from dotenv import load_dotenv
 
+from MyLogger import TelegramLogsHandler, create_my_logger
+
 
 def get_user_reviews(url: str, headers: dict, params: dict = None):
     server_response_max_time = 90
@@ -17,14 +19,11 @@ def get_user_reviews(url: str, headers: dict, params: dict = None):
     except requests.exceptions.ReadTimeout as e:
         error_msg = f'Произошла ошибка:\n{e}'
 
-        create_log_message(logger_msg=main_logger.exception, msg=error_msg,
-                           to_telegram=True, func=f"{__name__}.get_user_reviews")
+        main_logger.exception(error_msg)
         return
     except requests.exceptions.ConnectionError as e:
         error_msg = f'Произошла ошибка:\n{e}'
-
-        create_log_message(logger_msg=main_logger.exception, msg=error_msg,
-                           func=f"{__name__}.get_user_reviews")
+        main_logger.exception(error_msg)
         time.sleep(10)
         return
 
@@ -55,10 +54,7 @@ def get_request_long_polling(base_url: str, auth_token: str, params: dict = None
 
         send_msg_to_user(chat_id=TELEGRAM_CHAT_ID, text=answer, use_name=True)
 
-        create_log_message(logger_msg=main_logger.debug,
-                           msg=f"Homework review was sent to chat_id={TELEGRAM_CHAT_ID}",
-                           func=f"{__name__}.get_request_long_polling")
-
+        main_logger.debug(f"Homework review was sent to chat_id={TELEGRAM_CHAT_ID}")
         return user_reviews.get("last_attempt_timestamp")
 
     return user_reviews.get("timestamp_to_request")
@@ -83,20 +79,10 @@ def send_msg_to_user(text: str, chat_id: int = None, use_name: bool = False, bot
         message = f'{text} {chat_name if use_name else ""}'
         bot.send_message(chat_id=chat_id, text=message)
 
-        create_log_message(logger_msg=main_logger.debug,
-                           msg=f"Send to chat_id: {chat_id} message: {message}",
-                           func=f"{__name__}.send_msg_to_user")
-
+        main_logger.debug(f"Send to chat_id: {chat_id} message: {message}")
     except telegram.error.BadRequest as e:
-        create_log_message(logger_msg=main_logger.exception,
-                           msg=f'Chat [chat_id={chat_id}] not found. If you have not send command /start to bot, '
-                               f'just do it.\n Error: {e}',
-                           func=f"{__name__}.send_msg_to_user")
-
-
-# Импорт должен быть тут, а не в начале, тк в модуле логгирования мы импортитруем функцию
-# отправки сообщения в телеграмм send_msg_to_user из __main__ модуля
-from MyLogger import TelegramLogsHandler, create_my_logger, create_log_message
+        main_logger.exception(f'Chat [chat_id={chat_id}] not found. If you have not send command /start to bot, '
+                              f'just do it.\n Error: {e}')
 
 
 if __name__ == '__main__':
@@ -115,8 +101,7 @@ if __name__ == '__main__':
     main_logger.addHandler(TelegramLogsHandler(tg_bot=BOT, chat_id=TELEGRAM_CHAT_ID))
 
     start_message = "Бот запущен"
-
-    create_log_message(logger_msg=main_logger.info, msg=start_message, to_telegram=True)
+    main_logger.info(start_message)
 
     params = {
         "timestamp": None
